@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Notification System</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 32px;
+            background: white;
+            border: 1px solid #e1e7ef;
+            border-radius: 14px;
+            box-shadow: 0 8px 30px rgba(20, 40, 80, 0.08);
+        }
+
+        h1 { margin-top: 0; font-size: 26px; color: #172b4d; }
+        p { color: #64748b; font-size: 14px; }
+
+        label {
+            display: block;
+            margin: 18px 0 7px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 13px;
+            border: 0;
+            border-radius: 7px;
+            background: #1769e0;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .error {
+            color: #b42318;
+            background: #fef3f2;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <main class="login-card">
+        <h1>Welcome back</h1>
+        <p>Sign in to the notification system.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="error">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" action="{% url 'user_login' %}">
+            {% csrf_token %}
+
+            <label for="username">Username</label>
+            <input id="username" name="username"
+                   type="text" autocomplete="username" required>
+
+            <label for="password">Password</label>
+            <input id="password" name="password"
+                   type="password" autocomplete="current-password" required>
+
+            <button type="submit">Sign in</button>
+        </form>
+    </main>
+</body>
+</html>

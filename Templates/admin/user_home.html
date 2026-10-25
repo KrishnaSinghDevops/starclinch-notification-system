@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home | Starclinch Notification System</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(10, 20, 45, 0.82),
+                    rgba(25, 65, 120, 0.60)
+                ),
+                url("/static/images/home-bg.jpg") center / cover no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            color: #ffffff;
+        }
+
+        .home-card {
+            width: 100%;
+            max-width: 760px;
+            padding: 60px 35px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .brand {
+            display: inline-block;
+            margin-bottom: 28px;
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 30px;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin-bottom: 18px;
+            font-size: clamp(32px, 6vw, 52px);
+            line-height: 1.15;
+            font-weight: 750;
+        }
+
+        .description {
+            max-width: 520px;
+            margin: 0 auto 32px;
+            color: rgba(255, 255, 255, 0.88);
+            font-size: 17px;
+            line-height: 1.7;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 30px;
+            padding: 10px 16px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.14);
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #70f0ad;
+            box-shadow: 0 0 12px rgba(112, 240, 173, 0.8);
+        }
+
+        .logout-button {
+            display: inline-block;
+            min-width: 150px;
+            padding: 13px 25px;
+            border: none;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #173b70;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .logout-button:hover {
+            background: #eaf2ff;
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            margin-top: 35px;
+            color: rgba(255, 255, 255, 0.68);
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .home-card {
+                padding: 42px 22px;
+            }
+
+            .description {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="home-card">
+        <div class="brand">Starclinch · Notification System</div>
+
+        <h1>Welcome,<br>{{ request.session.username }}</h1>
+
+        <p class="description">
+            You have successfully logged in.
+            Manage your session and stay connected with our notification system.
+        </p>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            Login successful
+        </div>
+
+        <form method="POST" action="{% url 'user_logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="logout-button">
+                Logout &nbsp; →
+            </button>
+        </form>
+
+        <div class="footer">
+            Secure Session · Starclinch Notification System
+        </div>
+    </main>
+
+    <!-- OneSignal SDK: load only once -->
+    <script
+        src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+        defer>
+    </script>
+
+    <script>
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+
+        window.OneSignalDeferred.push(async function (OneSignal) {
+            console.log("OneSignal callback started");
+
+            try {
+                await OneSignal.init({
+                    appId: "7462921b-8f34-417d-bb24-55c318872347",
+                    safari_web_id:
+                        "web.onesignal.auto.29ad6177-53c3-46b5-8017-0e7b95131b37",
+                    notifyButton: {
+                        enable: true
+                    }
+                });
+
+                console.log("OneSignal initialized");
+
+                const subscriptionId = OneSignal.User.PushSubscription.id;
+                OneSignal.User.PushSubscription.addEventListener(
+                    "change",
+                    function (subscription) {
+                        console.log(
+                            "OneSignal subscription changed:",
+                            subscription.current
+                        );
+                    }
+                );
+
+                console.log(
+                    "Current OneSignal subscription ID:",
+                    OneSignal.User.PushSubscription.id
+                );
+
+                console.log("Subscription ID:", subscriptionId);
+
+                if (!subscriptionId) {
+                    console.warn(
+                        "OneSignal initialized, but subscription ID is unavailable."
+                    );
+                    return;
+                }
+
+                const response = await fetch(
+                    "{% url 'save_push_suscribtion' %}",
+                    {
+                        method: "POST",
+                        credentials: "same-origin",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": "{{ csrf_token }}"
+                        },
+                        body: JSON.stringify({
+                            subscription_id: subscriptionId
+                        })
+                    }
+                );
+
+                const result = await response.json();
+
+                console.log("Save endpoint HTTP status:", response.status);
+                console.log("Save endpoint response:", result);
+
+                if (response.ok && result.status) {
+                    console.log("Subscription saved successfully.");
+                } else {
+                    console.error("Subscription save failed:", result);
+                }
+
+            } catch (error) {
+                console.error("OneSignal error:", error);
+            }
+        });
+    </script>
+</body>
+</html>
+```

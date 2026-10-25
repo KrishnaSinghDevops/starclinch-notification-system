@@ -1,0 +1,633 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starclinch | Notification Settings</title>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 25px;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+            gap: 15px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 27px;
+        }
+
+        .subtitle {
+            color: #697586;
+            margin: 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 12px #14213d0d;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 850px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border-bottom: 1px solid #e7ebf0;
+            padding: 15px 12px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #edf3fc;
+            color: #244e87;
+        }
+
+        .trigger-name {
+            font-weight: bold;
+        }
+
+        .trigger-code {
+            display: block;
+            font-size: 12px;
+            color: #788496;
+            margin-top: 5px;
+        }
+
+        .template-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 12px;
+            background: #e5f7ec;
+            color: #187443;
+            margin-bottom: 10px;
+        }
+
+        .status.off {
+            background: #fce8e8;
+            color: #a42d2d;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            padding: 9px 12px;
+            font-size: 13px;
+            margin: 2px;
+        }
+
+        .primary {
+            background: #2459a9;
+            color: white;
+        }
+
+        .secondary {
+            background: #e9eef5;
+            color: #26364a;
+        }
+
+        .danger {
+            background: #fff0f0;
+            color: #a42d2d;
+        }
+
+        .empty {
+            color: #7b8492;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .message.success {
+            display: block;
+            background: #e5f7ec;
+            color: #187443;
+        }
+
+        .message.error {
+            display: block;
+            background: #fce8e8;
+            color: #a42d2d;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #0008;
+            z-index: 10;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 560px;
+            margin: 30px auto;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .close {
+            font-size: 22px;
+            background: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #cfd6e0;
+            border-radius: 5px;
+            font: inherit;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-row input {
+            width: auto;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .card {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="header">
+        <div>
+            <h1>Notification Settings</h1>
+            <p class="subtitle">
+                Manage notification templates for every trigger and channel.
+            </p>
+        </div>
+
+        <button class="primary" id="refreshButton">
+            Refresh Data
+        </button>
+    </div>
+
+    <div id="messageBox" class="message"></div>
+
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Trigger</th>
+                    <th>WhatsApp</th>
+                    <th>Email</th>
+                    <th>Web Push</th>
+                </tr>
+            </thead>
+
+            <tbody id="notificationTable">
+                {% for item in data %}
+                <tr>
+                    <td>
+                        <span class="trigger-name">
+                            {{ item.TriggerName }}
+                        </span>
+                        <span class="trigger-code">
+                            {{ item.TriggerCode }}
+                        </span>
+                    </td>
+
+                    <td class="template-cell"
+                        data-trigger-id="{{ item.TriggerID }}"
+                        data-channel="WHATSAPP">
+                        Loading...
+                    </td>
+
+                    <td class="template-cell"
+                        data-trigger-id="{{ item.TriggerID }}"
+                        data-channel="EMAIL">
+                        Loading...
+                    </td>
+
+                    <td class="template-cell"
+                        data-trigger-id="{{ item.TriggerID }}"
+                        data-channel="WEB_PUSH">
+                        Loading...
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">No notification triggers found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Create / Edit Template Modal -->
+<div class="modal" id="templateModal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2 id="modalTitle">Create Template</h2>
+            <button class="close" id="closeModalButton">&times;</button>
+        </div>
+
+        <form id="templateForm">
+            <input type="hidden" id="templateId">
+
+            <div class="form-group">
+                <label for="triggerId">Trigger</label>
+                <select id="triggerId" required>
+                    {% for item in data %}
+                    <option value="{{ item.TriggerID }}">
+                        {{ item.TriggerName }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="channel">Channel</label>
+                <select id="channel" required>
+                    <option value="WHATSAPP">WhatsApp</option>
+                    <option value="EMAIL">Email</option>
+                    <option value="WEB_PUSH">Web Push</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="templateName">Template Name</label>
+                <input type="text" id="templateName" required>
+            </div>
+
+            <div class="form-group" id="subjectGroup">
+                <label for="emailSubject">Email Subject</label>
+                <input type="text" id="emailSubject">
+            </div>
+
+            <div class="form-group">
+                <label for="messageBody">Message Body</label>
+                <textarea id="messageBody" required></textarea>
+            </div>
+
+            <div class="form-group checkbox-row">
+                <input type="checkbox" id="isEnabled" checked>
+                <label for="isEnabled">Enable this template</label>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="secondary"
+                        id="cancelButton">Cancel</button>
+                <button type="submit" class="primary" id="saveButton">
+                    Save Template
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Django URL names from adminpanel/urls.py
+    const TEMPLATE_LIST_URL = "{% url 'notification_template' %}";
+    const TEMPLATE_CREATE_URL = "{% url 'template manage' %}";
+    const TEMPLATE_UPDATE_URL = "{% url 'update_template' %}";
+
+    let templates = [];
+
+    const table = document.getElementById("notificationTable");
+    const modal = document.getElementById("templateModal");
+    const form = document.getElementById("templateForm");
+    const messageBox = document.getElementById("messageBox");
+
+    function showMessage(message, type) {
+        messageBox.textContent = message;
+        messageBox.className = "message " + type;
+
+        window.setTimeout(function () {
+            messageBox.className = "message";
+        }, 4000);
+    }
+
+    function getTemplate(triggerId, channel) {
+        return templates.find(function (item) {
+            return Number(item.TriggerID) === Number(triggerId)
+                && item.Channel === channel;
+        });
+    }
+
+    async function loadTemplates() {
+        try {
+            const response = await fetch(TEMPLATE_LIST_URL);
+            const result = await response.json();
+
+            if (!response.ok || result.status === false) {
+                throw new Error(result.message || result.msg
+                    || "Could not load templates.");
+            }
+
+            templates = result.data || [];
+            renderTemplateCells();
+
+        } catch (error) {
+            showMessage(error.message, "error");
+        }
+    }
+
+    function renderTemplateCells() {
+        const cells = document.querySelectorAll(".template-cell");
+
+        cells.forEach(function (cell) {
+            const triggerId = cell.dataset.triggerId;
+            const channel = cell.dataset.channel;
+            const item = getTemplate(triggerId, channel);
+
+            cell.replaceChildren();
+
+            if (!item) {
+                const empty = document.createElement("div");
+                empty.className = "empty";
+                empty.textContent = "No template created";
+
+                const button = document.createElement("button");
+                button.className = "primary";
+                button.textContent = "+ Create";
+                button.addEventListener("click", function () {
+                    openCreateForm(triggerId, channel);
+                });
+
+                cell.append(empty, button);
+                return;
+            }
+
+            const name = document.createElement("div");
+            name.className = "template-name";
+            name.textContent = item.TemplateName;
+
+            const status = document.createElement("span");
+            status.className = "status";
+            status.textContent = item.IsEnabled ? "Enabled" : "Disabled";
+
+            if (!item.IsEnabled) {
+                status.classList.add("off");
+            }
+
+            const editButton = document.createElement("button");
+            editButton.className = "secondary";
+            editButton.textContent = "Edit";
+            editButton.addEventListener("click", function () {
+                openEditForm(item);
+            });
+
+            const toggleButton = document.createElement("button");
+            toggleButton.className = item.IsEnabled ? "danger" : "primary";
+            toggleButton.textContent = item.IsEnabled ? "Turn Off" : "Turn On";
+            toggleButton.addEventListener("click", function () {
+                toggleTemplate(item);
+            });
+
+            cell.append(name, document.createElement("br"), status,
+                        document.createElement("br"),
+                        editButton, toggleButton);
+        });
+    }
+
+    function openCreateForm(triggerId, channel) {
+        form.reset();
+        document.getElementById("templateId").value = "";
+        document.getElementById("triggerId").value = triggerId;
+        document.getElementById("channel").value = channel;
+        document.getElementById("isEnabled").checked = true;
+        document.getElementById("modalTitle").textContent =
+            "Create Template";
+        document.getElementById("saveButton").textContent =
+            "Save Template";
+
+        updateSubjectVisibility();
+        modal.style.display = "block";
+    }
+
+    function openEditForm(item) {
+        form.reset();
+
+        document.getElementById("templateId").value = item.TemplateID;
+        document.getElementById("triggerId").value = item.TriggerID;
+        document.getElementById("channel").value = item.Channel;
+        document.getElementById("templateName").value =
+            item.TemplateName || "";
+        document.getElementById("emailSubject").value =
+            item.EmailSubject || "";
+        document.getElementById("messageBody").value =
+            item.MessageBody || "";
+        document.getElementById("isEnabled").checked =
+            Boolean(item.IsEnabled);
+
+        document.getElementById("modalTitle").textContent =
+            "Edit Template";
+        document.getElementById("saveButton").textContent =
+            "Update Template";
+
+        updateSubjectVisibility();
+        modal.style.display = "block";
+    }
+
+    function updateSubjectVisibility() {
+        const channel = document.getElementById("channel").value;
+        document.getElementById("subjectGroup").style.display =
+            channel === "EMAIL" ? "block" : "none";
+    }
+
+    function closeModal() {
+        modal.style.display = "none";
+    }
+
+    async function saveTemplate(event) {
+        event.preventDefault();
+
+        const templateId = document.getElementById("templateId").value;
+
+        const payload = {
+            TriggerID: Number(document.getElementById("triggerId").value),
+            TemplateName: document.getElementById("templateName").value.trim(),
+            Channel: document.getElementById("channel").value,
+            EmailSubject: document.getElementById("emailSubject").value,
+            MessageBody: document.getElementById("messageBody").value.trim(),
+            IsEnabled: document.getElementById("isEnabled").checked
+        };
+
+        if (templateId) {
+            payload.TemplateID = Number(templateId);
+        }
+
+        try {
+            const response = await fetch(
+                templateId ? TEMPLATE_UPDATE_URL : TEMPLATE_CREATE_URL,
+                {
+                    method: templateId ? "PUT" : "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || result.status === false) {
+                throw new Error(result.message || result.msg
+                    || "Could not save template.");
+            }
+
+            closeModal();
+            showMessage(result.message || "Template saved successfully.",
+                        "success");
+
+            await loadTemplates();
+
+        } catch (error) {
+            showMessage(error.message, "error");
+        }
+    }
+
+    async function toggleTemplate(item) {
+        const payload = {
+            TemplateID: Number(item.TemplateID),
+            TemplateName: item.TemplateName,
+            Channel: item.Channel,
+            EmailSubject: item.EmailSubject || "",
+            MessageBody: item.MessageBody,
+            IsEnabled: !item.IsEnabled
+        };
+
+        try {
+            const response = await fetch(TEMPLATE_UPDATE_URL, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || result.status === false) {
+                throw new Error(result.message || "Could not change status.");
+            }
+
+            showMessage("Template status updated.", "success");
+            await loadTemplates();
+
+        } catch (error) {
+            showMessage(error.message, "error");
+        }
+    }
+
+    document.getElementById("channel").addEventListener(
+        "change", updateSubjectVisibility
+    );
+
+    document.getElementById("closeModalButton").addEventListener(
+        "click", closeModal
+    );
+
+    document.getElementById("cancelButton").addEventListener(
+        "click", closeModal
+    );
+
+    document.getElementById("refreshButton").addEventListener(
+        "click", loadTemplates
+    );
+
+    form.addEventListener("submit", saveTemplate);
+
+    loadTemplates();
+</script>
+</body>
+</html>
